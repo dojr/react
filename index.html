@@ -5,6 +5,33 @@
     <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script>
+        window.API = {
+            fetchFriends() {
+                return new Promise((res, rej) => {
+                    const friends = [
+                        {
+                            name: 'Lauren', 
+                            active: true,
+                        }, 
+                        {
+                            name: 'Jake', 
+                            active: true,
+                        }, 
+                        {
+                            name: 'Larry', 
+                            active: false,
+                        }
+                    ]
+
+                    setTimeout(() => res(friends), 2000)
+                })
+
+                
+            }
+        }
+    </script>
 </head>
 
 
@@ -12,6 +39,36 @@
     <div id='app'></div>
 
     <script type= text/babel>
+
+        class Loading extends React.Component{
+            constructor(props){
+                super(props)
+
+                this.state = {
+                    text: 'Loading'
+                }
+            }
+            componentDidMount(){
+                const stopper = this.state.text  + '...'
+
+                this.interval = window.setInterval(() => {
+                    this.state.text === stopper 
+                        ? this.setState({text: 'Loading'})
+                        : this.setState((currentState) => {
+                            return {
+                                text: currentState.text + '.'
+                            }
+                    })
+                }, 300)
+            }
+            componentWillUnmount(){
+                window.clearInterval(this.interval)
+            }
+            render(){
+                return<p>{this.state.text}</p>
+            }
+        }
+
         function ActiveFriends(props){
             return(
             <div>
@@ -51,21 +108,9 @@
             super(props)
 
             this.state = {
-                friends: [
-                    {
-                        name: 'Lauren', 
-                        active: true,
-                    }, 
-                    {
-                        name: 'Jake', 
-                        active: true,
-                    }, 
-                    {
-                        name: 'Larry', 
-                        active: false,
-                    }
-                ],
+                friends: [],
                 input: '',
+                loading: true,
             }
 
             this.handleRemoveFriend = this.handleRemoveFriend.bind(this)
@@ -73,6 +118,11 @@
             this.handleAddFriend = this.handleAddFriend.bind(this)
             this.handleClearFriends = this.handleClearFriends.bind(this)
             this.handleToggleFriend = this.handleToggleFriend.bind(this)
+
+            console.log("--CONSTRUCTOR--")
+        }
+        componenetDidMount(){
+
         }
         handleClearFriends(){
             this.setState((currentState) => {
@@ -123,8 +173,27 @@
                 }
             })
         }
+        componentDidMount(){
+            console.log("--componentDidMount--")
+            API.fetchFriends()
+                .then((friends) => {
+                    this.setState({
+                        friends: friends,
+                        loading: false,
+                    })
+                })
+        }
+        componentDidUpdate(){
+            console.log("--componentDidUpdate--")
+        }
 
         render(){
+            console.log("--render--")
+
+            if (this.state.loading === true){
+                return <Loading/>
+            }
+
             return(
                 <div>
                     <input
